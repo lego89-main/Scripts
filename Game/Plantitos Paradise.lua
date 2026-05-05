@@ -1566,7 +1566,7 @@ task.spawn(function()
                 queue([[
                     repeat task.wait() until game:IsLoaded()
                     task.wait(3)
-                    loadstring(game:HttpGet("https://codeberg.org/LEGO89/Scripts/raw/branch/main/Plantitos%20Paradise.lua"))()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/lego89-main/Scripts/refs/heads/main/Game/Plantitos%20Paradise.lua"))()
                 ]])
             end
             TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)
