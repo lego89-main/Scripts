@@ -240,6 +240,7 @@ local Settings = {
 	AutoRebirth = false,
 	AutoUpgrade = false,
 	BuyAllUpgrade = false,
+	AutoClaim = false,
 }
 
 local Multiplier = {
@@ -309,7 +310,6 @@ end
 
 task.spawn(function()
     while not Rayfield:GetGui() do
-        
             local NewArea = workspace.Areas:FindFirstChildWhichIsA("Model") or workspace.Areas:FindFirstChildWhichIsA("Folder")
             if NewArea ~= CurrentArea then
                 CurrentArea = NewArea
@@ -381,6 +381,26 @@ task.spawn(function()
 			    end)
 			end
 			ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_knit@1.5.1"):WaitForChild("knit"):WaitForChild("Services"):WaitForChild("TrainService"):WaitForChild("RE"):WaitForChild("RunTrain"):FireServer(BestTreadmill)
+		end
+		if Settings.AutoClaim then
+		    pcall(function()
+    		    for i, v in pairs(plr.PlayerGui.DailyRewardGui.Frame.RewardsFrame:GetChildren()) do
+                    if v:IsA("Frame") and v.Visible and v.ClaimButton.Visible then
+                        ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_knit@1.5.1"):WaitForChild("knit"):WaitForChild("Services"):WaitForChild("DailyRewardService"):WaitForChild("RE"):WaitForChild("ClaimDailyReward"):FireServer(tonumber(v.Name))
+                    end
+                end
+                for i, v in pairs(plr.PlayerGui.OnlineRewardGui.Frame.RewardsFrame:GetChildren()) do
+                    if v:IsA("Frame") and v.Visible and v.Button.ClaimLabel.Visible then
+                        ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_knit@1.5.1"):WaitForChild("knit"):WaitForChild("Services"):WaitForChild("OnlineRewardService"):WaitForChild("RE"):WaitForChild("ClaimOnlineReward"):FireServer(tonumber(v.Name))
+                    end
+                end
+                if plr.PlayerGui.OnlineQuestGui.Frame.TimeFrame.TimeProgressFrame.ProgressLabel.Text == "16:00/16:00" then
+                    ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_knit@1.5.1"):WaitForChild("knit"):WaitForChild("Services"):WaitForChild("OnlineRewardService"):WaitForChild("RF"):WaitForChild("ClaimOnlineQuestReward"):InvokeServer()
+                end
+                if not plr.PlayerGui.SpinningWheelGui.Frame.SpinButton.TextLabel.Text:lower():find("r") then
+                    ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_knit@1.5.1"):WaitForChild("knit"):WaitForChild("Services"):WaitForChild("SpinningWheelService"):WaitForChild("RF"):WaitForChild("StartSpin"):InvokeServer()
+                end
+            end)
 		end
 		if Settings.AutoRebirth then
 		    if plr.PlayerGui.RebirthGui.Frame.ProgressFrame.Frame.ProgressBar.Size.X.Scale > 0.95 then
@@ -557,6 +577,11 @@ AllSave.AutoTrain = Farm:CreateToggle({Name = "Auto Train", CurrentValue = false
     if Value then
         pcall(function()AllSave.AutoWin:Set(false)end)
     end
+end})
+
+AllSave.AutoClaim = Farm:CreateToggle({Name = "Auto Claim", CurrentValue = false, Flag = "AutoClaim", Callback = function(Value, IsSet)
+    if IsSet == false then PlaySound("Toggle", Value) end
+    Settings["AutoClaim"] = Value
 end})
 
 local Shop = Window:CreateTab("Shop", 10893267086)
