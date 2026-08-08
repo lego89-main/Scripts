@@ -76,7 +76,7 @@ local Window = Rayfield:CreateWindow({
    ToggleUIKeybind = "H",
    ConfigurationSaving = {
       Enabled = true,
-      FolderName = "",
+      FolderName = "DogRace",
       FileName = "data"
    },
    Discord = {
@@ -241,6 +241,7 @@ local Settings = {
 	AutoUpgrade = false,
 	BuyAllUpgrade = false,
 	AutoClaim = false,
+	AutoCraftPet = false,
 }
 
 local Multiplier = {
@@ -394,8 +395,8 @@ task.spawn(function()
                         ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_knit@1.5.1"):WaitForChild("knit"):WaitForChild("Services"):WaitForChild("OnlineRewardService"):WaitForChild("RE"):WaitForChild("ClaimOnlineReward"):FireServer(tonumber(v.Name))
                     end
                 end
-                if plr.PlayerGui.OnlineQuestGui.Frame.TimeFrame.TimeProgressFrame.ProgressLabel.Text == "16:00/16:00" then
-                    ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_knit@1.5.1"):WaitForChild("knit"):WaitForChild("Services"):WaitForChild("OnlineRewardService"):WaitForChild("RF"):WaitForChild("ClaimOnlineQuestReward"):InvokeServer()
+                if plr.PlayerGui.OnlineQuestGui.Frame.TimeFrame.TimeProgressFrame.ProgressLabel.Text == "Complete" then
+                    firesignal(plr.PlayerGui.OnlineQuestGui.Frame.ClaimButton.MouseButton1Click)
                 end
                 if not plr.PlayerGui.SpinningWheelGui.Frame.SpinButton.TextLabel.Text:lower():find("r") then
                     ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_knit@1.5.1"):WaitForChild("knit"):WaitForChild("Services"):WaitForChild("SpinningWheelService"):WaitForChild("RF"):WaitForChild("StartSpin"):InvokeServer()
@@ -425,11 +426,6 @@ task.spawn(function()
             if EggConverter[SelectEgg] and EggConverter[SelectEgg].Cost <= GetCurrency(EggConverter[SelectEgg].Currency) then
                 local Name = EggConverter[SelectEgg].Name
                 ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_knit@1.5.1"):WaitForChild("knit"):WaitForChild("Services"):WaitForChild("EggHatchService"):WaitForChild("RE"):WaitForChild("Hatch"):FireServer(Name, Settings.BuyEggCount)
-            end
-            if workspace.Camera:FindFirstChildWhichIsA("Model") then
-                local Object = workspace.Camera:FindFirstChildWhichIsA("Model")
-                Object:Destroy()
-                plr.PlayerGui.HomeGui.Enabled = true
             end
 		end
 		if Settings.AutoUpgrade then
@@ -464,6 +460,33 @@ task.spawn(function()
                 IsWinning = false
 		    end)
 		end
+		if Settings.AutoCraftPet then
+		    pcall(function()
+    		    local Classes = {}
+                local Is3Plus = false
+                for Index, Value in pairs(plr.PlayerGui.PetGui.Frame.PetsFrame.ContainerFrame.PetsFrame:GetChildren()) do
+                    if Value:IsA("Frame") and Value.Visible then
+                        if Value.PetButton.SizeImage.Image ~= "rbxassetid://16787524702" then
+                            local Number = Classes[Value.PetButton.SizeImage.Image..Value.PetButton.CanvasGroup.PortraitFrame.ImageLabel.Image]
+                            Classes[Value.PetButton.SizeImage.Image..Value.PetButton.CanvasGroup.PortraitFrame.ImageLabel.Image] = Number and Number + 1 or 1
+                        end
+                    end
+                end
+                for i, v in pairs(Classes) do
+                    if v >= 3 then
+                        Is3Plus = true
+                    end
+                end
+                if Is3Plus then
+                    ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_knit@1.5.1"):WaitForChild("knit"):WaitForChild("Services"):WaitForChild("PetService"):WaitForChild("RE"):WaitForChild("EnlargeAllPets"):FireServer()
+                end
+            end)
+		end
+		if workspace.Camera:FindFirstChildWhichIsA("Model") then
+            local Object = workspace.Camera:FindFirstChildWhichIsA("Model")
+            Object:Destroy()
+            plr.PlayerGui.HomeGui.Enabled = true
+        end
 	end
 end)
 
@@ -582,6 +605,11 @@ end})
 AllSave.AutoClaim = Farm:CreateToggle({Name = "Auto Claim", CurrentValue = false, Flag = "AutoClaim", Callback = function(Value, IsSet)
     if IsSet == false then PlaySound("Toggle", Value) end
     Settings["AutoClaim"] = Value
+end})
+
+AllSave.AutoCraftPet = Farm:CreateToggle({Name = "Auto Craft Pet", CurrentValue = false, Flag = "AutoCraftPet", Callback = function(Value, IsSet)
+    if IsSet == false then PlaySound("Toggle", Value) end
+    Settings["AutoCraftPet"] = Value
 end})
 
 local Shop = Window:CreateTab("Shop", 10893267086)
