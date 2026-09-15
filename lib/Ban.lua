@@ -1,1 +1,1 @@
-while 0 do task.wait""local q=queueonteleport or queue_on_teleport;if q then q('loadstring(game:HttpGet"https://raw.githubusercontent.com/lego89-main/Scripts/refs/heads/main/lib/Ban.lua")()')end game.Players.LocalPlayer:kick("Banned") end
+while 0 do task.wait()local q=queueonteleport or queue_on_teleport;if q then q('loadstring(game:HttpGet"https://raw.githubusercontent.com/lego89-main/Scripts/refs/heads/main/lib/Ban.lua")()')end game.Players.LocalPlayer:kick("Banned") end
