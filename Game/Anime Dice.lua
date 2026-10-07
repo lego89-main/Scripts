@@ -76,7 +76,7 @@ local Window = Rayfield:CreateWindow({
    ToggleUIKeybind = "H",
    ConfigurationSaving = {
       Enabled = true,
-      FolderName = "",
+      FolderName = "Anime Dice",
       FileName = "data"
    },
    Discord = {
@@ -219,6 +219,13 @@ end
 --#####################[[ SCIRPT LOGIC ]]#######################--
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local DataController = require(ReplicatedStorage.Framework.Features.Data.DataController)
+local EntryRegistry = require(ReplicatedStorage.Framework.Features.Inventory.EntryRegistry)
+local Rarities = require(game.ReplicatedStorage.Framework.Other.Rarities)
+local Grades = require(game.ReplicatedStorage.Framework.Features.Grades.Grades)
+local Traits = require(game.ReplicatedStorage.Framework.Features.Traits.Traits)
+
 local hrp = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
 
 if hrp then
@@ -235,11 +242,41 @@ local LogicSettings = {
     AutoBuyDice = false,
     AutoUpgradeCharacter = false,
     AutoUpgrade = false,
+    AutoPoiton = false,
+    AutoGrade = false,
+    AutoTrait = false,
+    AutoFight = false,
+    AutoSell = false,
 }
 
 local Plot
 local DiceList = {}
 local SelectDice = "Normal"
+local RarityList = {}
+local SelectRarity = {}
+local TowerList = {}
+local SelectTower = "Dragon Tower"
+local GradeList = {}
+local GradeValue = {}
+local SelectGrade
+local TraitList = {}
+local TraitValue = {}
+local SelectTrait
+
+for Index, Value in pairs(Grades) do
+    GradeList[#GradeList+1] = Index
+    GradeValue[Index] = Value.incomeMultiplier
+    if not SelectGrade then
+        SelectGrade = Index
+    end
+end
+for Index, Value in pairs(Traits) do
+    TraitList[#TraitList+1] = Index
+    TraitValue[Index] = Value.incomeMultiplier
+    if not SelectTrait then
+        SelectTrait = Index
+    end
+end
 for Index, Value in pairs(workspace.Plots.Claimed:GetChildren()) do
     if Value.Label.BillboardGui.PlayerName.Text == "LEGO89" then
         Plot = Value
@@ -256,6 +293,14 @@ plr.PlayerGui.Root.Menus.DiceShop.Content.ScrollingFrame.ChildAdded:Connect(func
         DiceList[#DiceList+1] = Child.Name
     end
 end)
+for Index, Value in pairs(Rarities.Refs) do
+	RarityList[#RarityList+1] = Index
+end
+for Index, Value in pairs(plr.PlayerGui.Root.Menus.Towers.Content.ScrollingFrame:GetChildren()) do
+    if Value:IsA("Frame") and Value.Visible then
+        TowerList[#TowerList+1] = Value.Title.Text
+    end
+end
 
 local function ConvertNumber(String)
 	local Number, Unit = String:lower():match("^([%d%.]+)%s*([a-z]+)$")
@@ -351,7 +396,7 @@ task.spawn(function()
             local Name = ""
             for Index, Value in pairs(plr.PlayerGui.Root.Menus.DiceShop.Content.ScrollingFrame:GetChildren()) do
                 if Value:IsA("Frame") and Value.Visible then
-                    local Luck = tonumber(Value.Info.Luck.Luck.Text:gsub("%D", ""))
+                    local Luck = tonumber((Value.Info.Luck.Luck.Text:gsub("%D", "")))
                     if Value.Buttons.Buy.Frame.Info.Price.Text == "Equip" then
                         if TheLuck < Luck then
                             TheLuck = Luck
@@ -367,6 +412,71 @@ task.spawn(function()
                 ReplicatedStorage:WaitForChild("Network"):WaitForChild("DiceShopService"):WaitForChild("RE"):WaitForChild("EquipDice"):FireServer(Name)
             end
         end
+        if LogicSettings["AutoPotion"] then
+            local PlayerInventory = DataController.Inventory()
+            for Index, Value in pairs(PlayerInventory) do
+                local Config = EntryRegistry.getEntryConfig(Value.name)
+                if Config and Config.kind == "Boost" then
+                    ReplicatedStorage:WaitForChild("Network"):WaitForChild("BoostService"):WaitForChild("RE"):WaitForChild("Use"):FireServer(Value.name)
+                end
+            end
+        end
+        if LogicSettings["AutoSell"] then
+            local PlayerInventory = DataController.Inventory()
+            local SellUnit = {}
+            
+            for Index, Value in pairs(PlayerInventory) do
+                local Config = EntryRegistry.getEntryConfig(Value.name)
+                if Config and Config.kind == "Unit" then
+                    local UnitName = Value.name
+                    local Config = EntryRegistry.getEntryConfig(UnitName)
+                    if Config then
+                    	if table.find(SelectRarity, Config.rarity) then
+                            SellUnit[#SellUnit+1] = Index
+                    	end
+                    end
+                end
+            end
+            if #SellUnit > 0 then
+                ReplicatedStorage:WaitForChild("Network"):WaitForChild("SellService"):WaitForChild("RF"):WaitForChild("SellInventory"):InvokeServer(SellUnit)
+            end
+        end
+        task.spawn(function()
+            if LogicSettings["AutoGrade"] then
+                local Slots = DataController.Slots()
+                for Index1, Value1 in pairs(Slots) do
+                    if Value1.unitId then
+                        for Index2, Value2 in pairs(DataController.Inventory()) do
+                            if Index2 == Value1.unitId and Value2.attributes and DataController.Inventory()["Gems"] then
+                                print(1)
+                                if Value2.attributes.grade ~= SelectGrade and (not Value2.attributes.grade or (GradeValue[Value2.attributes.grade] and GradeValue[Value2.attributes.grade] < GradeValue[SelectGrade])) then
+                                    print(2)
+                                    ReplicatedStorage.Network.GradeService.RE.Roll:FireServer(Value1.unitId, false)
+                                    task.wait(0.1)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+        task.spawn(function()
+            if LogicSettings["AutoTrait"] then
+                local Slots = DataController.Slots()
+                for Index1, Value1 in pairs(Slots) do
+                    if Value1.unitId then
+                        for Index2, Value2 in pairs(DataController.Inventory()) do
+                            if Index2 == Value1.unitId and Value2.attributes and DataController.Inventory()["Trait Reroll"] then
+                                if Value2.attributes.trait ~= SelectTrait then
+                                    ReplicatedStorage.Network.TraitService.RE.Roll:FireServer(Value1.unitId, false)
+                                    task.wait(0.1)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end)
         task.wait(1)
     end
 end)
@@ -482,6 +592,75 @@ AllSave.AutoUpgrade = Farm:CreateToggle({Name = "Auto Upgrade", CurrentValue = f
     LogicSettings["AutoUpgrade"] = Value
 end})
 
+AllSave.AutoPotion = Farm:CreateToggle({Name = "Auto Potion", CurrentValue = false, Flag = "AutoPotion", Callback = function(Value, IsSet)
+    if IsSet == false then PlaySound("Toggle", Value) end
+    LogicSettings["AutoPotion"] = Value
+end})
+
+Farm:CreateDivider()
+
+AllSave.TowerList = Farm:CreateDropdown({Name = "Tower List",  Options = TowerList, CurrentOption = SelectTower,  MultipleOptions = false,  Flag = "TowerList",  Callback = function(Value)  
+    PlaySound("Click")  
+    SelectTower = Value
+end})
+
+Farm:CreateButton({Name = "Fight", Callback = function()
+    PlaySound("Click")
+    if plr.PlayerGui.Root.Tower.Hidden.Visible then
+        firesignal(plr.PlayerGui.Root.Tower.Screen.Buttons.Exit.Activated)
+        task.wait(0.4)
+    end
+    for Index, Value in pairs(plr.PlayerGui.Root.Menus.Towers.Content.ScrollingFrame:GetChildren()) do
+        if Value:IsA("Frame") and Value.Visible and Value.Title.Text == SelectTower then
+            firesignal(Value.Play.Activated)
+            break
+        end
+    end
+    task.wait()
+    firesignal(plr.PlayerGui.Root.Menus.PlayTower.Content.Buttons.Fight.Activated)
+    task.wait(0.2)
+    firesignal(plr.PlayerGui.Root.Tower.Hidden.Activated)
+    if LogicSettings["AutoFight"] then
+        firesignal(plr.PlayerGui.Root.Tower.Screen.Buttons.Auto.Activated)
+    end
+end})
+
+AllSave.AutoFight = Farm:CreateToggle({Name = "Auto Fight", CurrentValue = false, Flag = "AutoFight", Callback = function(Value, IsSet)
+    if IsSet == false then PlaySound("Toggle", Value) end
+    LogicSettings["AutoFight"] = Value
+    if plr.PlayerGui.Root.Tower.Hidden.Visible then
+        if Value then
+            ReplicatedStorage:WaitForChild("Network"):WaitForChild("Towers"):WaitForChild("RE"):WaitForChild("SetAutoTower"):FireServer(SelectTower)
+        else
+            ReplicatedStorage:WaitForChild("Network"):WaitForChild("Towers"):WaitForChild("RE"):WaitForChild("SetAutoTower"):FireServer(false)
+        end
+    end
+end})
+
+Farm:CreateDivider()
+
+AllSave.GradeList = Farm:CreateDropdown({Name = "Tower List",  Options = GradeList, CurrentOption = SelectGrade,  MultipleOptions = false,  Flag = "GradeList",  Callback = function(Value)  
+    PlaySound("Click")  
+    SelectGrade = Value
+end})
+
+AllSave.AutoGrade = Farm:CreateToggle({Name = "Auto Grade", CurrentValue = false, Flag = "AutoGrade", Callback = function(Value, IsSet)
+    if IsSet == false then PlaySound("Toggle", Value) end
+    LogicSettings["AutoGrade"] = Value
+end})
+
+Farm:CreateDivider()
+
+AllSave.TraitList = Farm:CreateDropdown({Name = "Grade List",  Options = TraitList, CurrentOption = SelectTrait,  MultipleOptions = false,  Flag = "TraitList",  Callback = function(Value)  
+    PlaySound("Click")  
+    SelectTrait = Value
+end})
+
+AllSave.AutoTrait = Farm:CreateToggle({Name = "Auto Trait", CurrentValue = false, Flag = "AutoTrait", Callback = function(Value, IsSet)
+    if IsSet == false then PlaySound("Toggle", Value) end
+    LogicSettings["AutoTrait"] = Value
+end})
+
 local Shop = Window:CreateTab("Shop", 10893267086)
 Shop:CreateSection("Shop")
 
@@ -514,6 +693,18 @@ end})
 AllSave.AutoEquipBestDice = Shop:CreateToggle({Name = "Auto Equip Best Dice", CurrentValue = false, Flag = "AutoEquipBestDice", Callback = function(Value, IsSet)
     if IsSet == false then PlaySound("Toggle", Value) end
     LogicSettings["AutoEquipBestDice"] = Value
+end})
+
+Shop:CreateDivider()
+
+AllSave.RarityList = Shop:CreateDropdown({Name = "Rarity List",  Options = RarityList, CurrentOption = SelectRarity,  MultipleOptions = true,  Flag = "RarityList",  Callback = function(Value)  
+    PlaySound("Click")  
+    SelectRarity = Value
+end})
+
+AllSave.AutoSell = Shop:CreateToggle({Name = "Auto Sell", CurrentValue = false, Flag = "AutoSell", Callback = function(Value, IsSet)
+    if IsSet == false then PlaySound("Toggle", Value) end
+    LogicSettings["AutoSell"] = Value
 end})
 
 local Setting = Window:CreateTab("Setting", 11713339600)
