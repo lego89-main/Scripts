@@ -7,7 +7,7 @@ local Found = false
 local JoinedServer = _G.JoinedServer
 
 for Index, Value in pairs(Players:GetPlayers()) do
-	if Value.Name == TargetName then
+	if Value.Name:lower() == TargetName:lower() then
 		Found = true
 	end
 end
