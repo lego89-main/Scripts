@@ -37,4 +37,5 @@ _G.Name = "]==]..TargetName..[==["
 _G.JoinedServer = HttpService:JSONDecode(']==]..HttpService:JSONEncode(JoinedServer)..[==[')
 loadstring(game:HttpGet("https://raw.githubusercontent.com/lego89-main/Scripts/refs/heads/main/lib/FindServer.lua"))()
 ]==]
+setclipboard(SourceCode)
 queue_on_teleport(SourceCode)
