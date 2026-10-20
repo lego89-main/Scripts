@@ -1128,6 +1128,16 @@ Settings["PaintList"] = {}
 Settings["SelectPaint"] = {}
 Settings["AutoBuyPaint"] = false
 Settings["AutoBuild"] = false
+Settings["SelectRarity"] = {}
+Settings["RarityList"] = {}
+Settings["AutoBuyPet"] = false
+Settings["AutoHire"] = false
+Settings["SelectStaff"] = {}
+Settings["StaffList"] = {
+    "Cashier",
+    "Cleaner",
+    "Mechanic",
+}
 
 local plr = game.Players.LocalPlayer
 
@@ -1144,14 +1154,12 @@ for Index, Value in ipairs(Config.Lifts) do
         Settings["LiftList"][#Settings["LiftList"]+1] = Value.id
     end
 end
-
 for Index, Value in ipairs(Config.Upgrades) do
     Settings["UpgradeList"][#Settings["UpgradeList"]+1] = Value.id
 end
-
---[[
-
-]]
+for Index, Value in ipairs(Config.Pets.Bayongs) do
+    Settings["RarityList"][#Settings["RarityList"]+1] = Value.id
+end
 
 local Current
 KahaRemote.OnClientEvent:Connect(function(Action, Id, Data)
@@ -1261,7 +1269,24 @@ local function GetBestLift(State)
     return Current
 end
 
-local Clock = os.clock()
+local function GetBagCost(Bag)
+    local Cost = 0
+    for Index, Value in pairs(Config.Pets.Bayongs) do
+        if Bag == Value.id then
+            Cost = Value.price
+            break
+        end
+    end
+    return Cost
+end
+
+
+
+local Clocks = {
+    os.clock(),
+    os.clock(),
+    os.clock(),
+}
 task.spawn(function()
     while true do
         local State = Remotes:WaitForChild("GetState"):InvokeServer()
@@ -1295,67 +1320,38 @@ task.spawn(function()
                 end
             end
         end
-        if Settings["AutoInstallLift"] and (os.clock() - Clock) > 5 then
-            Clock = os.clock()
-            local BestLift = GetBestLift(State)
-            if BestLift then
-                for Index1, Value1 in pairs(BestLift) do
-                    if Index1 == "Car" then
-                        for Index2, Value2 in pairs(Shop.Structure.CarBays:GetChildren()) do
-                            if not Value2.Slot:GetAttribute("Occupied") then
-                                if GetTier(Value2.Slot:GetAttribute("LiftTier")) < GetTier(Value1) then
-                                    Remotes:WaitForChild("InstallLift"):InvokeServer(
-                                        "Car:"..Value2.Slot:GetAttribute("SlotId"),
-                                        Value1
-                                    )
-                                end
-                            end
-                        end
-                    elseif Index1 == "Motorcycle" then
-                        for Index2, Value2 in pairs(Shop.Structure.MotoBays:GetChildren()) do
-                            if not Value2.Slot:GetAttribute("Occupied") then
-                                if GetTier(Value2.Slot:GetAttribute("LiftTier")) < GetTier(Value1) then
-                                    Remotes:WaitForChild("InstallLift"):InvokeServer(
-                                        "Motorcycle:"..Value2.Slot:GetAttribute("SlotId"),
-                                        Value1
-                                    )
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
         if Settings["AutoCheckIn"] then 
-            for Index1, Value1 in pairs(CustomersShop:GetChildren()) do
-                if Value1 and not Value1:GetAttribute("VehicleClass") and Value1:FindFirstChild("Head") and Value1.Head:FindFirstChild("CustomerTag") and Value1.Head.CustomerTag:FindFirstChild("Bar") and Value1.Head.CustomerTag.Bar.Visible and Value1.Head.CustomerTag.Bar.Size.X.Scale > 0 then
-                    for Index2, Value2 in pairs(CustomersShop:GetChildren()) do
-                        if Value1 ~= Value2 and Value2:GetAttribute("VehicleClass") then
-                            if Value2:GetAttribute("VehicleClass") == "Motorcycle" then
-                                for Index3, Value3 in pairs(Shop.Structure:GetDescendants()) do
-                                    if Value3.Name == "Slot" and Value3:IsA("Model") and Value3:GetAttribute("VehicleClass") == "Motorcycle" and not Value3:GetAttribute("Occupied") then
-                                       local Value = Value3.Parent
-                                        Remotes:WaitForChild("AssignSlot"):InvokeServer(
-                                            Value2:GetAttribute("CustomerId"),
-                                            "Motorcycle:"..Value:GetAttribute("BayIndex")
-                                        )
+            task.spawn(function()
+                for Index1, Value1 in pairs(CustomersShop:GetChildren()) do
+                    if Value1 and not Value1:GetAttribute("VehicleClass") and Value1:FindFirstChild("Head") and Value1.Head:FindFirstChild("CustomerTag") and Value1.Head.CustomerTag:FindFirstChild("Bar") and Value1.Head.CustomerTag.Bar.Visible and Value1.Head.CustomerTag.Bar.Size.X.Scale > 0 then
+                        for Index2, Value2 in pairs(CustomersShop:GetChildren()) do
+                            if Value1 ~= Value2 and Value2:GetAttribute("VehicleClass") then
+                                if Value2:GetAttribute("VehicleClass") == "Motorcycle" then
+                                    for Index3, Value3 in pairs(Shop.Structure:GetDescendants()) do
+                                        if Value3.Name == "Slot" and Value3:IsA("Model") and Value3:GetAttribute("VehicleClass") == "Motorcycle" and not Value3:GetAttribute("Occupied") then
+                                           local Value = Value3.Parent
+                                            Remotes:WaitForChild("AssignSlot"):InvokeServer(
+                                                Value2:GetAttribute("CustomerId"),
+                                                "Motorcycle:"..Value:GetAttribute("BayIndex")
+                                            )
+                                        end
                                     end
-                                end
-                            elseif Value2:GetAttribute("VehicleClass") == "Car" then
-                                for Index3, Value3 in pairs(Shop.Structure:GetDescendants()) do
-                                    if Value3.Name == "Slot" and Value3:IsA("Model") and Value3:GetAttribute("VehicleClass") == "Car" and not Value3:GetAttribute("Occupied") then
-                                       local Value = Value3.Parent
-                                        Remotes:WaitForChild("AssignSlot"):InvokeServer(
-                                            Value2:GetAttribute("CustomerId"),
-                                            "Car:"..Value:GetAttribute("BayIndex")
-                                        )
+                                elseif Value2:GetAttribute("VehicleClass") == "Car" then
+                                    for Index3, Value3 in pairs(Shop.Structure:GetDescendants()) do
+                                        if Value3.Name == "Slot" and Value3:IsA("Model") and Value3:GetAttribute("VehicleClass") == "Car" and not Value3:GetAttribute("Occupied") then
+                                           local Value = Value3.Parent
+                                            Remotes:WaitForChild("AssignSlot"):InvokeServer(
+                                                Value2:GetAttribute("CustomerId"),
+                                                "Car:"..Value:GetAttribute("BayIndex")
+                                            )
+                                        end
                                     end
                                 end
                             end
                         end
                     end
                 end
-            end
+            end)
         end
         if Settings["AutoCleanTrash"] and Shop:FindFirstChild("Kalat") then
             for Index, Value in pairs(Shop.Kalat:GetDescendants()) do
@@ -1401,9 +1397,8 @@ task.spawn(function()
                         local Parent = Value.Parent.Parent
                         if Parent then
                             hrp.CFrame = Parent.CFrame
-                            task.wait(0.25)
+                            task.wait(0.15)
                             fireproximityprompt(Value)
-                            task.wait(0.25)
                         end
                     end
                 end
@@ -1426,10 +1421,76 @@ task.spawn(function()
                             hrp.CFrame = BasePart.CFrame
                             task.wait(0.15)
                             fireproximityprompt(Value)
+                            break
                         end
                     end
                 end
             end
+        end
+        if Settings["AutoInstallLift"] and (os.clock() - Clocks[1]) > 5 then
+            Clocks[1] = os.clock()
+            task.spawn(function()
+                local BestLift = GetBestLift(State)
+                if BestLift then
+                    for Index1, Value1 in pairs(BestLift) do
+                        if Index1 == "Car" then
+                            for Index2, Value2 in pairs(Shop.Structure.CarBays:GetChildren()) do
+                                if not Value2.Slot:GetAttribute("Occupied") then
+                                    if GetTier(Value2.Slot:GetAttribute("LiftTier")) < GetTier(Value1) then
+                                        Remotes:WaitForChild("InstallLift"):InvokeServer(
+                                            "Car:"..Value2.Slot:GetAttribute("SlotId"),
+                                            Value1
+                                        )
+                                    end
+                                end
+                            end
+                        elseif Index1 == "Motorcycle" then
+                            for Index2, Value2 in pairs(Shop.Structure.MotoBays:GetChildren()) do
+                                if not Value2.Slot:GetAttribute("Occupied") then
+                                    if GetTier(Value2.Slot:GetAttribute("LiftTier")) < GetTier(Value1) then
+                                        Remotes:WaitForChild("InstallLift"):InvokeServer(
+                                            "Motorcycle:"..Value2.Slot:GetAttribute("SlotId"),
+                                            Value1
+                                        )
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+        if Settings["AutoBuyPet"] and (os.clock() - Clocks[2]) > 3 then
+            Clocks[2] = os.clock()
+            task.spawn(function()
+                local PetRequest = {Remotes.PetRequest:InvokeServer("info",nil)}
+                if PetRequest[2] then
+                    for Index, Value in pairs(PetRequest[2].spots) do
+                        if not Value.sold and table.find(Settings["SelectRarity"], Value.bag) and GetBagCost(Value.bag) and GetBagCost(Value.bag) <= GetCash() then
+                            Remotes.PetRequest:InvokeServer(
+                                "buy",
+                                {
+                                    bag = Value.bag,
+                                    slot = Index
+                                }
+                            )
+                        end
+                    end
+                end
+            end)
+        end
+        if Settings["AutoHire"] and (os.clock() - Clocks[3]) > 3 then
+            Clocks[3] = os.clock()
+            task.spawn(function()
+                local GetHireInfo = Remotes.GetHireInfo:InvokeServer()
+                if GetHireInfo then
+                    for Index, Value in pairs(GetHireInfo.staff) do
+                        if GetHireInfo.jobs[Value.job].ok and table.find(Settings["SelectStaff"], Value.job) and GetHireInfo.prices[Value.job] and GetHireInfo.prices[Value.job] <= GetCash() then
+                            Remotes.HireWorker:InvokeServer(Value.job)
+                        end
+                    end
+                end
+            end)
         end
         if Settings["AutoUpgrade"] then
             task.spawn(function()
@@ -1472,11 +1533,6 @@ task.spawn(function()
                 end
             end)
         end
-        if Settings["AutoBuyPaint"] then
-            task.spawn(function()
-                
-            end)
-        end
         task.wait()
     end
 end)
@@ -1515,12 +1571,36 @@ AllSave["AutoBuild"] = FGLUpgrade:CreateToggle({Name = "Auto Build", CurrentValu
     Settings["AutoBuild"] = Value
 end})
 
-local SGLMotorcycleShop = SMain:CreateGroup("Motorcycle Lift Shop", Icons.axe_battle, "Right")
-AllSave["LiftList"] = SGLMotorcycleShop:CreateDropdown({Name = "Motorcycle Lift List", Options = Settings["LiftList"], CurrentOption = {"None"}, MultipleOptions = true, Flag = "MotorcycleLiftList", Callback = function(Value)
+local SGLMotorcycleShop = SMain:CreateGroup("Motorcycle Lift Shop", Icons.axe_battle, "Left")
+AllSave["MotorcycleLiftList"] = SGLMotorcycleShop:CreateDropdown({Name = "Motorcycle Lift List", Options = Settings["LiftList"], CurrentOption = {"None"}, MultipleOptions = true, Flag = "MotorcycleLiftList", Callback = function(Value)
     Settings["SelectMotorcycleLift"] = Value
 end})
 AllSave["AutoBuyMotorcycleLift"] = SGLMotorcycleShop:CreateToggle({Name = "Auto Buy", CurrentValue = false, Flag = "AutoBuyMotorcycleLift", Callback = function(Value)
     Settings["AutoBuyMotorcycleLift"] = Value
+end})
+
+local SGLCarShop = SMain:CreateGroup("Car Lift Shop", Icons.axe_battle, "Left")
+AllSave["CarLiftList"] = SGLCarShop:CreateDropdown({Name = "Car Lift List", Options = Settings["LiftList"], CurrentOption = {"None"}, MultipleOptions = true, Flag = "CarLiftList", Callback = function(Value)
+    Settings["SelectCarLift"] = Value
+end})
+AllSave["AutoBuyCarLift"] = SGLCarShop:CreateToggle({Name = "Auto Buy", CurrentValue = false, Flag = "AutoBuyCarLift", Callback = function(Value)
+    Settings["AutoBuyCarLift"] = Value
+end})
+
+local SGRPetShop = SMain:CreateGroup("Pet Shop", Icons.baby, "Right")
+AllSave["RarityList"] = SGRPetShop:CreateDropdown({Name = "Rarity List", Options = Settings["RarityList"], CurrentOption = {"None"}, MultipleOptions = true, Flag = "RarityList", Callback = function(Value)
+    Settings["SelectRarity"] = Value
+end})
+AllSave["AutoBuyPet"] = SGRPetShop:CreateToggle({Name = "Auto Buy", CurrentValue = false, Flag = "AutoBuyPet", Callback = function(Value)
+    Settings["AutoBuyPet"] = Value
+end})
+
+local SGRHireStaff = SMain:CreateGroup("Hire Staff", Icons.hammer, "Right")
+AllSave["StaffList"] = SGRHireStaff:CreateDropdown({Name = "Job List", Options = Settings["StaffList"], CurrentOption = {"None"}, MultipleOptions = true, Flag = "StaffList", Callback = function(Value)
+    Settings["SelectStaff"] = Value
+end})
+AllSave["AutoHire"] = SGRHireStaff:CreateToggle({Name = "Auto Hire", CurrentValue = false, Flag = "AutoHire", Callback = function(Value)
+    Settings["AutoHire"] = Value
 end})
 
 --[[ ##################################################################]]
