@@ -1582,6 +1582,19 @@ AllSave["EnabledFPS"] = GLMiseMain:CreateToggle({Name = "Enable FPS Booster", Cu
     end
 end})
 AllSave["AutoExecute"] = GLMiseMain:CreateToggle({Name = "Auto Execute", CurrentValue = false, Flag = "AutoExecute", Callback = function(Value)
+    if Value then
+        local queue =
+            (getgenv and getgenv().queue_on_teleport)
+            or queue_on_teleport
+            or (syn and syn.queue_on_teleport)
+            or (fluxus and fluxus.queue_on_teleport)
+                
+        queue([[
+            repeat task.wait() until game:IsLoaded()
+            task.wait(3)
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/lego89-main/Scripts/refs/heads/main/Game/Talyer.lua"))()
+        ]])
+    end
     Settings["AutoExecute"] = Value
 end})
 AllSave["AutoRejoinAfter15min"] = GLMiseMain:CreateToggle({Name = "Auto Rejoin After 15min", CurrentValue = false, Flag = "AutoRejoinAfter15min", Callback = function(Value)
@@ -1767,7 +1780,7 @@ task.spawn(function()
             local Players = game:GetService("Players")
             local TeleportService = game:GetService("TeleportService")
                 
-            if AutoExecute then
+            if Settings["AutoExecute"] then
                 local queue =
                     (getgenv and getgenv().queue_on_teleport)
                     or queue_on_teleport
@@ -1777,7 +1790,7 @@ task.spawn(function()
                 queue([[
                     repeat task.wait() until game:IsLoaded()
                     task.wait(3)
-                    loadstring(game:HttpGet(""))()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/lego89-main/Scripts/refs/heads/main/Game/Talyer.lua"))()
                 ]])
             end
             TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)
