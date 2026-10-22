@@ -22,7 +22,7 @@ while true do
 			end
 		end
 	end
-	
+	local Houses = workspace:FindFirstChild("Houses")
 	if #Houses:GetChildren() == 0 then
 		queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/lego89-main/Scripts/refs/heads/main/Game/Babft%20Candy%20Hopper.lua"))()')
 		local Servers = {}
