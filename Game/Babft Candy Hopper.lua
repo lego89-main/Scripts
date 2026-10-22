@@ -19,9 +19,9 @@ while true do
 					HRP.CFrame = TouchPart.CFrame
 					pcall(function()
 						firetouchinterest(HRP, TouchPart, 0)
-						task.wait()
+						task.wait(0.2)
 						firetouchinterest(HRP, TouchPart, 1)
-						task.wait(1)
+						task.wait(3)
 					end)
 				end
 			end
