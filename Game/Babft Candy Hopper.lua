@@ -2,7 +2,7 @@ local plr = game.Players.LocalPlayer
 
 while true do
 	task.wait()
-	local Character = Player.Character
+	local Character = plr.Character
 	local HRP = Character and Character:FindFirstChild("HumanoidRootPart")
 	if HRP then
 		local Houses = workspace:FindFirstChild("Houses")
