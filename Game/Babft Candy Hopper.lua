@@ -17,10 +17,12 @@ while true do
 
 				if TouchPart and TouchInterest and TouchInterest:IsA("TouchTransmitter") then
 					HRP.CFrame = TouchPart.CFrame
-					firetouchinterest(HRP, TouchPart, 0)
-					task.wait()
-					firetouchinterest(HRP, TouchPart, 1)
-					task.wait(1)
+					pcall(function()
+						firetouchinterest(HRP, TouchPart, 0)
+						task.wait()
+						firetouchinterest(HRP, TouchPart, 1)
+						task.wait(1)
+					end)
 				end
 			end
 		end
