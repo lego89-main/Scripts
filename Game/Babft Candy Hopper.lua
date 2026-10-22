@@ -24,7 +24,7 @@ while true do
 	end
 	
 	if #Houses:GetChildren() == 0 then
-		queue_on_teleport('loadstring(game:HttpGet(""))()')
+		queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/lego89-main/Scripts/refs/heads/main/Game/Babft%20Candy%20Hopper.lua"))()')
 		local Servers = {}
 	    local Req = game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true")
 	    local Body = HttpService:JSONDecode(Req)
