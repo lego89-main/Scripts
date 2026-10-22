@@ -1,3 +1,6 @@
+local HttpService = game: GetService("HttpService")
+local TeleportService = game: GetService("TeleportService")
+
 local plr = game.Players.LocalPlayer
 
 while true do
