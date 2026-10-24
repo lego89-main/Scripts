@@ -1462,11 +1462,14 @@ task.spawn(function()
         end
         if Settings["AutoBuyPet"] and (os.clock() - Clocks[2]) > 3 then
             Clocks[2] = os.clock()
-            task.spawn(function()
+            local hrp = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
                 local PetRequest = {Remotes.PetRequest:InvokeServer("info",nil)}
                 if PetRequest[2] then
                     for Index, Value in pairs(PetRequest[2].spots) do
                         if not Value.sold and table.find(Settings["SelectRarity"], Value.bag) and GetBagCost(Value.bag) and GetBagCost(Value.bag) <= GetCash() then
+                            hrp.CFrame = workspace.Map.BayongStall.Vendor.HumanoidRootPart.CFrame
+                            task.wait(0.2)
                             Remotes.PetRequest:InvokeServer(
                                 "buy",
                                 {
@@ -1477,20 +1480,23 @@ task.spawn(function()
                         end
                     end
                 end
-            end)
+            end
         end
         if Settings["AutoHire"] and (os.clock() - Clocks[3]) > 3 then
             Clocks[3] = os.clock()
-            task.spawn(function()
+            local hrp = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
                 local GetHireInfo = Remotes.GetHireInfo:InvokeServer()
                 if GetHireInfo then
                     for Index, Value in pairs(GetHireInfo.staff) do
                         if GetHireInfo.jobs[Value.job].ok and table.find(Settings["SelectStaff"], Value.job) and GetHireInfo.prices[Value.job] and GetHireInfo.prices[Value.job] <= GetCash() then
+                            hrp.CFrame = workspace.Map.HiringBooth.Recruiter.HumanoidRootPart.CFrame
+                            task.wait(0.2)
                             Remotes.HireWorker:InvokeServer(Value.job)
                         end
                     end
                 end
-            end)
+            end
         end
         if Settings["AutoUpgrade"] then
             task.spawn(function()
