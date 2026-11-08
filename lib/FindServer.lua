@@ -26,7 +26,10 @@ if not Found then
         end
     end
     if #Servers > 0 then
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, Servers[math.random(1, #Servers)], Players.LocalPlayer)
+		while true do
+            task.wait()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, Servers[math.random(1, #Servers)], Players.LocalPlayer)
+		end
     end
 end
 
