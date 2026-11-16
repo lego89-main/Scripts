@@ -48,6 +48,7 @@ local Fonts = {
     FontAwesome = LoadFont("FontAwesome"),
 }
 
+local HttpService      = game:GetService("HttpService")
 local Players          = game:GetService("Players")
 local TweenService     = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -135,6 +136,7 @@ end
 
 local Library = { Flags = {}, Icons = Icons, Theme = Theme, ToggleKey = Enum.KeyCode.Insert }
 Library.__index = Library
+Library.Elements = {}
 
 function Library:Notify(Settings)
     duration = Settings.Duration or 3
@@ -220,6 +222,7 @@ function Library:Notify(Settings)
 
     return notification
 end
+
 function Library:CreateWindow(cfg)
     cfg = cfg or {}
     local Window = { Tabs = {}, CurrentTab = nil }
@@ -232,6 +235,75 @@ function Library:CreateWindow(cfg)
         Parent = GetParentGui(),
     })
     Window.Gui = gui
+    
+    local function Register(Flag, Object)
+        if Flag then
+            Library.Elements[Flag] = Object
+        end
+    end
+    function Window:SaveConfig(Name)
+        Name = Name or "Default"
+        local Data = {}
+    
+        for Flag, Value in pairs(Library.Flags) do
+            if typeof(Value) == "Color3" then
+                Data[Flag] = {
+                    Type = "Color3",
+                    R = Value.R,
+                    G = Value.G,
+                    B = Value.B
+                }
+            elseif typeof(Value) == "EnumItem" then
+                Data[Flag] = {
+                    Type = "Enum",
+                    Name = Value.Name,
+                    Enum = tostring(Value.EnumType)
+                }
+            else
+                Data[Flag] = Value
+            end
+        end
+    
+        writefile(Name .. ".json", HttpService:JSONEncode(Data))
+    end
+    function Window:LoadConfig(Name)
+        Name = Name or "Default"
+        local Path = Name .. ".json"
+    
+        if not isfile(Path) then return false end
+    
+        local Success, Data = pcall(function()
+            return HttpService:JSONDecode(readfile(Path))
+        end)
+    
+        if not Success then return false end
+    
+        for Flag, Value in pairs(Data) do
+            local Object = Library.Flags[Flag]
+    
+            if Object ~= nil then
+                if type(Value) == "table" then
+                    if Value.Type == "Color3" then
+                        Value = Color3.new(Value.R, Value.G, Value.B)
+                    elseif Value.Type == "Enum" then
+                        local EnumName = Value.Enum:match("([^%.]+)$")
+                        local EnumType = Enum[EnumName]
+                        Value = EnumType and EnumType[Value.Name] or Object
+                    end
+                end
+    
+                local Element = Library.Elements[Flag]
+
+                if Element then
+                    Element:Set(Value)
+                else
+                    Library.Flags[Flag] = Value
+                end
+            end
+        end
+    
+        return true
+    end
     
     local UIScale = New("UIScale", {
         Scale = 1,
@@ -511,6 +583,7 @@ function Library:CreateWindow(cfg)
                     sw.MouseButton1Click:Connect(function() obj:Set(not state) end)
                     if state then sw.BackgroundColor3 = Theme.FrameActive; knob.Position = UDim2.new(0, 22, 0.5, 0); knob.BackgroundColor3 = Theme.Accent end
                     flag(o.Flag, state)
+                    Register(o.Flag, obj)
                     return obj
                 end
 
@@ -574,9 +647,10 @@ function Library:CreateWindow(cfg)
                         end
                     end)
                     obj:Set(val, true)
+                    Register(o.Flag, obj)
                     return obj
                 end
-                
+
                 function G:CreateDropdown(o)
                     local items = o.Options or {}
                     local multiple = o.MultipleOptions == true
@@ -722,12 +796,14 @@ function Library:CreateWindow(cfg)
                     end)
                     updateText()
                     flag(o.Flag, multiple and table.clone(sel) or sel)
+                    Register(o.Flag, obj)
                     return obj
                 end
                 G.CreateCombo = G.CreateDropdown
 
                 function G:CreateTextbox(o)
                     local r = row(20)
+                    local obj = {}
                     Label({ Text = o.Name, TextColor3 = Theme.TextDisabled, Size = UDim2.new(1, -135, 1, 0), Parent = r })
                     local frame = New("Frame", {
                         Size = UDim2.fromOffset(130, 20), Position = UDim2.new(1, -130, 0, 0),
@@ -752,10 +828,17 @@ function Library:CreateWindow(cfg)
                         if o.Callback then task.spawn(o.Callback, tb.Text, enter) end
                     end)
                     flag(o.Flag, tb.Text)
-                    return { Set = function(_, v) tb.Text = v; flag(o.Flag, v) end, Get = function() return tb.Text end }
+                    function obj:Set(v)
+                        tb.Text = v
+                    end
+                    function obj:Get()
+                        return tb.Text
+                    end
+                    Register(o.Flag, obj)
+                    return obj
                 end
                 G.CreateInput = G.CreateTextbox
-
+                
                 function G:CreateColorPicker(o)
                     local h, s, v = (o.Color or Color3.new(1, 1, 1)):ToHSV()
                     local alpha = o.Alpha or 1
@@ -860,6 +943,7 @@ function Library:CreateWindow(cfg)
                         end)
                     end)
                     refresh()
+                    Register(o.Flag, obj)
                     return obj
                 end
 
@@ -900,6 +984,7 @@ function Library:CreateWindow(cfg)
                         end
                     end)
                     flag(o.Flag, key)
+                    Register(o.Flag, obj)
                 end
 
                 function G:CreateSeparator()
@@ -1871,6 +1956,7 @@ end)
 task.spawn(function()
     while true do
         task.wait(2)
+        pcall(function()Window:SaveConfig("CyberX/"..game.PlaceId)end)
         if Settings["AutoRejoinAfter15min"] then
             Settings["RejoinTimer"] = Settings["RejoinTimer"] + 2
         end
@@ -1878,7 +1964,7 @@ task.spawn(function()
             local Players = game:GetService("Players")
             local TeleportService = game:GetService("TeleportService")
                 
-            if Settings["AutoExecute"] then
+            if AutoExecute then
                 local queue =
                     (getgenv and getgenv().queue_on_teleport)
                     or queue_on_teleport
@@ -1888,7 +1974,7 @@ task.spawn(function()
                 queue([[
                     repeat task.wait() until game:IsLoaded()
                     task.wait(3)
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/lego89-main/Scripts/refs/heads/main/Game/Talyer.lua"))()
+                    loadstring(game:HttpGet(""))()
                 ]])
             end
             TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)
@@ -1896,3 +1982,4 @@ task.spawn(function()
         end
     end
 end)
+Window:LoadConfig("CyberX/"..game.PlaceId)
