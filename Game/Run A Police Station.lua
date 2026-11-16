@@ -1200,11 +1200,14 @@ Settings["AnySkills"] = false
 Settings["AutoUpgradeFleet"] = false
 Settings["AutoUpgradeStation"] = false
 Settings["AutoBuyCar"] = false
+Settings["AutoChallenge"] = false
 Settings["Skills"] = 10
 Settings["SelectCar"] = {}
 Settings["CarList"] = {}
 Settings["SelectRarity"] = {}
 Settings["RarityList"] = {}
+Settings["SelectChallenge"] = ""
+Settings["ChallengeList"] = {}
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -1234,6 +1237,11 @@ end)
 for Index, Value in ipairs(Vehicles) do
     Settings["CarList"][Index] = Value.Name
 end
+for Index, Value in pairs(Store.get().Challenges.List) do
+    Settings["ChallengeList"][Index] = Value.Id
+end
+Settings["SelectChallenge"] = Settings["ChallengeList"][1]
+
 local function GetCash()
     return Store.get().Profile.Funding
 end
@@ -1256,8 +1264,8 @@ task.spawn(function()
                     end
                 end
             end
+            task.wait(0.1)
         end
-        task.wait(0.1)
         if Settings["AutoDispatch"] then
             local Data = Store.get()
             if Data then
@@ -1283,8 +1291,8 @@ task.spawn(function()
                     end
                 end
             end
+            task.wait(0.1)
         end
-        task.wait(0.1)
         if Settings["AutoHire"] then
             local Data = Store.get()
             if Data then
@@ -1300,8 +1308,8 @@ task.spawn(function()
                     end
                 end
             end
+            task.wait(0.1)
         end
-        task.wait(0.1)
         if Settings["AutoUpgradeFleet"] then
             local Data = Store.get()
             if Data then
@@ -1318,8 +1326,8 @@ task.spawn(function()
                     end
                 end
             end
+            task.wait(0.1)
         end
-        task.wait(0.1)
         if Settings["AutoUpgradeStation"] then
             local Data = Store.get()
             if Data then
@@ -1333,8 +1341,8 @@ task.spawn(function()
                     end)
                 end
             end
+            task.wait(0.1)
         end
-        task.wait(0.1)
         if Settings["AutoBuyCar"] then
             local Data = Store.get()
             if Data then
@@ -1350,8 +1358,8 @@ task.spawn(function()
                     end
                 end
             end
+            task.wait(0.1)
         end
-        task.wait(0.1)
         if Settings["AutoTrain"] then
             local Data = Store.get()
             if Data then
@@ -1388,6 +1396,19 @@ task.spawn(function()
                     end
                 end
             end
+            task.wait(0.1)
+        end
+        if Settings["AutoChallenge"] then
+            local Data = Store.get()
+            if Data and not Data.Challenges.Run then
+                pcall(function()
+                    Request:InvokeServer(
+                        "Challenge.Start",
+                        Settings["SelectChallenge"]
+                    )
+                end)
+            end
+            task.wait(0.1)
         end
     end
 end)
@@ -1407,6 +1428,12 @@ AllSave["AutoUpgradeStation"] = FGLAutomatic:CreateToggle({Name = "Auto Upgrade 
 end})
 AllSave["AutoTrain"] = FGLAutomatic:CreateToggle({Name = "Auto Train", CurrentValue = false, Flag = "AutoTrain", Callback = function(Value)
     Settings["AutoTrain"] = Value
+end})
+AllSave["ChallengeList"] = FGLAutomatic:CreateDropdown({Name = "Challenge List", Options = Settings["ChallengeList"], CurrentOption = Settings["ChallengeList"][1], MultipleOptions = false, Flag = "ChallengeList", Callback = function(Value)
+    Settings["SelectChallenge"] = Value
+end})
+AllSave["AutoChallenge"] = FGLAutomatic:CreateToggle({Name = "Auto Challenge", CurrentValue = false, Flag = "AutoChallenge", Callback = function(Value)
+    Settings["AutoChallenge"] = Value
 end})
 
 local FGLPolice = SMain:CreateGroup("Police", Icons.crown, "Left")
