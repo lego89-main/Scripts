@@ -1686,7 +1686,7 @@ task.spawn(function()
                 queue([[
                     repeat task.wait() until game:IsLoaded()
                     task.wait(3)
-                    loadstring(game:HttpGet(""))()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/lego89-main/Scripts/refs/heads/main/Game/Run%20A%20Police%20Station.lua"))()
                 ]])
             end
             TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)
