@@ -830,6 +830,25 @@ lib.Setclipboard = function(self, Text)
 		lib:Notify({Title = "Warning!", Text = "Your environment doesn't support setclipboard.", Duration = 4})
 	end
 end
+lib.CreateFakeCharacter = function(self, UserId, RigType)
+	if self ~= lib then UserId = self RigType = UserId end
+	if not UserId then UserId = plr.UserId end
+	if type(UserId) == "string" then
+	    local Success, Result = pcall(Players.GetUserIdFromNameAsync, Players, UserId)
+	    if not Success then return end
+	    UserId = Result
+	elseif type(UserId) ~= "number" then return end
+	local Success, Description = pcall(Players.GetHumanoidDescriptionFromUserId, Players, UserId)
+	if not Success then return end
+	local Success, Character = pcall(
+		Players.CreateHumanoidModelFromDescription,
+		Players,
+		Description,
+		(RigType == Enum.HumanoidRigType.R15 or RigType == Enum.HumanoidRigType.R6) and RigType or Enum.HumanoidRigType.R6
+	)
+	if not Success then return end
+	return Character
+end
 lib.Notify = function(self, Settings)
 	if self ~= lib then Settings = self end
 	local Name, Text, Duration = Settings.Name or Settings[1], Settings.Text or Settings[2], Settings.Duration or Settings[3]
