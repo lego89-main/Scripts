@@ -1216,6 +1216,7 @@ local Request = ReplicatedStorage.Remotes.Request
 local Officers = require(ReplicatedStorage.Shared.Config.Officers)
 local Officers2 = require(ReplicatedStorage.Shared.Rules.Officers)
 local Config = require(ReplicatedStorage.Shared.Config)
+local Calls = require(ReplicatedStorage.Shared.Rules.Calls)
 local Store = require(plr.PlayerScripts.Client.State.Store)
 local View = require(plr.PlayerScripts.Client.UI.View)
 
@@ -1245,7 +1246,13 @@ Settings["SelectChallenge"] = Settings["ChallengeList"][1]
 local function GetCash()
     return Store.get().Profile.Funding
 end
+local plr = game.Players.LocalPlayer
+local Store = require(plr.PlayerScripts.Client.State.Store)
 
+
+local Data = Store.get()
+
+local LastChallengeTime
 task.spawn(function()
     while true do
         task.wait(0.5)
@@ -1279,7 +1286,9 @@ task.spawn(function()
                 
                 if Count > 0 then
                     for Index, Value in pairs(Data.Incidents) do
-                        if Value.State == "Open" or (Value.Desk and Value.Desk.Why and Value.Desk.Why == "NeedsBackup") then
+                        local Needs = Calls.needs(Value)
+                        local Assigned = #(Value.Units or {})
+                        if Value.State == "Open" or Assigned < Needs then
                             pcall(function()
                                 Request:InvokeServer(
                                     "Dispatch.Quick",
@@ -1398,7 +1407,8 @@ task.spawn(function()
             end
             task.wait(0.1)
         end
-        if Settings["AutoChallenge"] then
+        if Settings["AutoChallenge"] and (not LastChallengeTime or (os.clock() - LastChallengeTime) > 600) then
+            LastChallengeTime = os.clock()
             local Data = Store.get()
             if Data and not Data.Challenges.Run then
                 pcall(function()
