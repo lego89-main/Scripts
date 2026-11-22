@@ -237,7 +237,7 @@ end
 lib.CreateBody = function(self, Object, Position)
 	if self ~= lib.CreateBody then Object = self Position = Object end
 	if not Object or not Position and typeof(Object) == "Instance" then return end
-	local IsAccessory = Object:IsA("Accessory")
+	local IsAccessory = Object.Class == "Accessory"
 	if IsAccessory then Object:WaitForChild("Handle", 0.15) end
 	if IsAccessory and not Object:FindFirstChild("Handle") then return end
 	
