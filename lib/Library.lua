@@ -966,6 +966,7 @@ local Custom = {
 		return plr.Character and plr.Character:FindFirstChildWhichIsA("Humanoid")
 	end,
 	lib = lib,
+	temp = {},
 }
 
 local CurrentEnv = getfenv(2)
