@@ -281,6 +281,40 @@ lib.CreateBody = function(self, Object, Position)
 		end)
 	end
 end
+lib.GetCFrame = function(self, Object)
+	if self ~= lib then Object = self end
+	if typeof(Object) ~= "Instance" then return end
+	if Object:IsA("BasePart") then
+		return Object.CFrame
+	elseif Object:IsA("Accessory") then
+		local Handle = Object:FindFirstChild("Handle")
+		if Handle and Handle:IsA("BasePart") then
+			return Handle.CFrame
+		else
+			local BasePart = Object:FindFirstChildWhichIsA("BasePart", true)
+			if BasePart then
+				return BasePart.CFrame
+			end
+		end
+	elseif Object:IsA("Tool") then
+		local Handle = Object:FindFirstChild("Handle")
+		if Handle and Handle:IsA("BasePart") then
+			return Handle.CFrame
+		else
+			local BasePart = Object:FindFirstChildWhichIsA("BasePart", true)
+			if BasePart then
+				return BasePart.CFrame
+			end
+		end
+	elseif Object:IsA("Model") then
+		return Object:GetPivot()
+	else
+		local BasePart = Object:FindFirstChildWhichIsA("BasePart", true)
+		if BasePart then
+			return BasePart.CFrame
+		end
+	end
+end
 lib.SetCFrame = function(self, Object, _CFrame)
 	if self ~= lib then Object = self _CFrame = Object end
 	if typeof(Object) ~= "Instance" or typeof(_CFrame) ~= "CFrame" then return end
