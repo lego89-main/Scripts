@@ -494,6 +494,7 @@ lib.ReplaceMotor6DWithWeld = function(self, Object)
 	Weld.Part0 = Object.Part0
 	Weld.Part1 = Object.Part1
 	Weld.Enabled = Object.Enabled
+	Object:Destroy()
 	return Weld
 end
 lib.ReplaceWeldWithMotor6D = function(self, Object)
@@ -507,6 +508,7 @@ lib.ReplaceWeldWithMotor6D = function(self, Object)
 	Motor6D.Part0 = Object.Part0
 	Motor6D.Part1 = Object.Part1
 	Motor6D.Enabled = Object.Enabled
+	Object:Destroy()
 	return Motor6D
 end
 lib.Clone = function(self, Object)
