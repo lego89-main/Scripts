@@ -483,6 +483,32 @@ lib.FindPlayer = function(self, Name, SearchDisplayName, If)
 		end
 	end
 end
+lib.ReplaceMotor6DWithWeld = function(self, Object)
+	if self ~= lib then Object = self end
+	if typeof(Object) ~= "Instance" then return end
+	if not Object:IsA("Motor6D") then end
+	local Weld = Instance.new("Weld", Object.Parent)
+	Weld.Name = Object.Name
+	Weld.C0 = Object.C0
+	Weld.C1 = Object.C1
+	Weld.Part0 = Object.Part0
+	Weld.Part1 = Object.Part1
+	Weld.Enabled = Object.Enabled
+	return Weld
+end
+lib.ReplaceWeldWithMotor6D = function(self, Object)
+	if self ~= lib then Object = self end
+	if typeof(Object) ~= "Instance" then return end
+	if not Object:IsA("Weld") and not Object:IsA("WeldConstraint") then end
+	local Motor6D = Instance.new("Motor6D", Object.Parent)
+	Motor6D.Name = Object.Name
+	Motor6D.C0 = Object.C0
+	Motor6D.C1 = Object.C1
+	Motor6D.Part0 = Object.Part0
+	Motor6D.Part1 = Object.Part1
+	Motor6D.Enabled = Object.Enabled
+	return Motor6D
+end
 lib.Clone = function(self, Object)
 	if self ~= lib then Object = self end
 	if typeof(Object) ~= "Instance" then return end
