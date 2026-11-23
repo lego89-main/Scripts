@@ -361,7 +361,7 @@ lib.ReanimateAccessory = function(self, Accessories)
 	end})
 	local Accessorys = {}
 	for Index, Value in pairs(Loaded) do
-		Accessorys[Indexes[Index]] = Value
+		Accessorys[Indexes[Index]] = Value or false
 	end
 	task.wait(1.5)
 	ReplicatedStorage["01_server"]:FireServer("cmd", "-net")
