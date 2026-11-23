@@ -342,13 +342,27 @@ lib.ReanimateAccessory = function(self, Accessories)
 	if self ~= lib then Accessories = self end
 	if type(Accessories) ~= "table" then return end
 	if not plr.Character then return end
+	local Ids = {}
+	local Indexes = {}
+	local Count = 0
 	
-	lib:LoadAccessory(Accessories)
-	local Accessorys = lib:WaitForAccessory({Parent = plr.Character, Count = #Accessories, Timeout = #Accessories*2, Callback = function(Child)
+	for Index, Value in pairs(Accessories) do
+		if Value ~= 0 then
+			Count = Count + 1
+			Ids[Count] = Value
+			Indexes[Count] = Index
+		end
+	end
+	lib:LoadAccessory(Ids)
+	local Loaded = lib:WaitForAccessory({Parent = plr.Character, Count = Count, Timeout = Count, Callback = function(Child)
 		if Child:IsA("Accessory") then
-			lib:CreateBody(Child, Child and (Child:FindFirstChild("Handle") and Child.Handle.Position or Vector3.new()) or Vector3.new())
+			lib:CreateBody(Child, Child:FindFirstChild("Handle") and Child.Handle.Position or Vector3.new())
 		end
 	end})
+	local Accessorys = {}
+	for Index, Value in pairs(Loaded) do
+		Accessorys[Indexes[Index]] = Value
+	end
 	task.wait(1.5)
 	ReplicatedStorage["01_server"]:FireServer("cmd", "-net")
 	return Accessorys
