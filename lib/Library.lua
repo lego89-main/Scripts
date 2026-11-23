@@ -1062,6 +1062,7 @@ local Custom = {
 	AvatarEditorService = game:GetService("AvatarEditorService"),
 	MarketplaceService = game:GetService("MarketplaceService"),
 	ContentProvider = game:GetService("ContentProvider"),
+	UserInputService = game:GetService("UserInputService"),
 	plr = plr,
 	char = function()
 		return plr.Character
