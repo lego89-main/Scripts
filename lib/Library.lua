@@ -178,15 +178,13 @@ lib.LoadAnimation = function(self, Settings)
     end
     return Lib
 end
-lib.LoadAccessory = function(self, Accessories)
+lib.LoadAccessory = function(self, Accessories, Character)
 	if self ~= lib then Accessories = self end
 	if type(Accessories) ~= "table" then return end
-	if not plr.Character then return end
-	
+	if not Character and not plr.Character then return end
 	task.spawn(function()
 		local Group = {}
 		local MaxLength = 200
-	
 		local function FireGroup()
 			if #Group > 0 then
 				game:GetService("ReplicatedStorage")["01_server"]:FireServer(
@@ -197,12 +195,10 @@ lib.LoadAccessory = function(self, Accessories)
 				task.wait(2)
 			end
 		end
-	
 		for i = 1, #Accessories do
 			local id = tostring(Accessories[i])
 			local current = "-gh "..table.concat(Group, " ")
 			local test = #Group > 0 and current.." "..id or "-gh "..id
-	
 			if #test > MaxLength then
 				FireGroup()
 			end
@@ -366,10 +362,10 @@ lib.GetSize = function(self, Object)
 		end
 	end
 end
-lib.ReanimateAccessory = function(self, Accessories)
+lib.ReanimateAccessory = function(self, Accessories, Character)
 	if self ~= lib then Accessories = self end
 	if type(Accessories) ~= "table" then return end
-	if not plr.Character then return end
+	if not plr.Character or not Character then return end
 	local Ids = {}
 	local Indexes = {}
 	local Count = 0
@@ -382,7 +378,7 @@ lib.ReanimateAccessory = function(self, Accessories)
 		end
 	end
 	lib:LoadAccessory(Ids)
-	local Loaded = lib:WaitForAccessory({Parent = plr.Character, Count = Count, Timeout = Count, Callback = function(Child)
+	local Loaded = lib:WaitForAccessory({Parent = Character or plr.Character, Count = Count, Timeout = Count, Callback = function(Child)
 		if Child:IsA("Accessory") then
 			lib:CreateBody(Child, Child:FindFirstChild("Handle") and Child.Handle.Position or Vector3.new())
 		end
