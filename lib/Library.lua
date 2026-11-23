@@ -449,6 +449,18 @@ lib.FindPlayer = function(self, Name, SearchDisplayName, If)
 		end
 	end
 end
+lib.Clone = function(self, Object)
+	if self ~= lib then Object = self end
+	if typeof(Object) ~= "Instance" then return end
+	if Object.Archivable then
+		return Object:Clone()
+	else
+		Object.Archivable = true
+		local Clone = Object:Clone()
+		Object.Archivable = false
+		return Clone
+	end
+end
 lib.RandomString = function(self, Length, PossibleText)
 	if self ~= lib then Length = self PossibleText = Length end
 	Length = tonumber(Length) or 0
