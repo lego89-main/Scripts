@@ -48,14 +48,12 @@ lib.LoadAnimation = function(self, Settings)
             Connection = nil
         end
     end
-
     function Lib:ChangeSpeed(Value)
         Value = tonumber(Value)
         if Value and Value >= 0 then
             Speed = Value
         end
     end
-    
     function Lib:IsPlaying()
     	return not ShouldStop
     end
@@ -129,16 +127,12 @@ lib.LoadAnimation = function(self, Settings)
 
     Connection = RunService.Heartbeat:Connect(function(DeltaTime)
         if ShouldStop then return end
-
         Elapsed = Elapsed + DeltaTime
-
         if Time and Elapsed >= Time then
             Lib:Stop()
             return
         end
-
         PlaybackTime = PlaybackTime + (DeltaTime * Speed)
-
         if PlaybackTime >= LastTime then
             if Loop and Duration > 0 then
                 PlaybackTime = FirstTime + ((PlaybackTime - FirstTime) % Duration)
@@ -149,15 +143,12 @@ lib.LoadAnimation = function(self, Settings)
                 return
             end
         end
-
         while Segment < #Frames - 1 and PlaybackTime >= Frames[Segment + 1].Time do
             Segment = Segment + 1
         end
-
         local Frame1, Frame2 = Frames[Segment], Frames[Segment + 1]
         local Interval = Frame2.Time - Frame1.Time
         local Alpha = Interval > 0 and math.clamp((PlaybackTime - Frame1.Time) / Interval, 0, 1) or 1
-
         for Name, Motor in pairs(Motors) do
             local Start = Frame1.Poses[Name]
             local Finish = Frame2.Poses[Name]
@@ -181,7 +172,10 @@ lib.LoadAnimation = function(self, Settings)
             end
         end
     end)
-
+    
+    function Lib:GetTime()
+    	return PlaybackTime
+    end
     return Lib
 end
 lib.LoadAccessory = function(self, Accessories)
