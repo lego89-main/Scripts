@@ -332,6 +332,40 @@ lib.SetCFrame = function(self, Object, _CFrame)
 		end
 	end
 end
+lib.GetSize = function(self, Object)
+	if self ~= lib then Object = self end
+	if typeof(Object) ~= "Instance" then return end
+	if Object:IsA("BasePart") then
+		return Object.Size
+	elseif Object:IsA("Model") then
+		return Object:GetExtentsSize()
+	elseif Object:IsA("Accessory") then
+		local Handle = Object:FindFirstChild("Handle")
+		if Handle and Handle:IsA("BasePart") then
+			return Handle.Size
+		else
+			local BasePart = Object:FindFirstChildWhichIsA("BasePart", true)
+			if BasePart then
+				return BasePart.Size
+			end
+		end
+	elseif Object:IsA("Tool") then
+		local Handle = Object:FindFirstChild("Handle")
+		if Handle and Handle:IsA("BasePart") then
+			return Handle.Size
+		else
+			local BasePart = Object:FindFirstChildWhichIsA("BasePart", true)
+			if BasePart then
+				return BasePart.Size
+			end
+		end
+	else
+		local BasePart = Object:FindFirstChildWhichIsA("BasePart", true)
+		if BasePart then
+			return BasePart.Size
+		end
+	end
+end
 lib.ReanimateAccessory = function(self, Accessories)
 	if self ~= lib then Accessories = self end
 	if type(Accessories) ~= "table" then return end
