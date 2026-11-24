@@ -387,8 +387,11 @@ lib.ReanimateAccessory = function(self, Accessories, Character)
 	for Index, Value in pairs(Loaded) do
 		Accessorys[Indexes[Index]] = Value or false
 	end
-	task.wait(1.5)
-	ReplicatedStorage["01_server"]:FireServer("cmd", "-net")
+	task.spawn(function()
+		task.wait(1.5)
+		ReplicatedStorage["01_server"]:FireServer("cmd", "-net")
+	end)
+	task.wait(0.05)
 	return Accessorys
 end
 lib.ReanimateCharacter = function(self, Character)
