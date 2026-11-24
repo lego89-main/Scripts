@@ -507,6 +507,45 @@ lib.ReplaceWeldWithMotor6D = function(self, Object)
 	Object:Destroy()
 	return Motor6D
 end
+lib.Weld = function(self, Object1, Object2)
+    if self ~= lib then Object1 = self Object2 = Object1 end
+    if typeof(Object1) ~= "Instance" or typeof(Object2) ~= "Instance" then return end
+    local BasePart1, BasePart2
+    if Object1:IsA("BasePart") then
+        BasePart1 = Object1
+    elseif Object1:IsA("Accessory") then
+        BasePart1 = Object1:FindFirstChild("Handle")
+        if not BasePart1 then
+            BasePart1 = Object1:FindFirstChildWhichIsA("BasePart", true)
+        end
+    elseif Object1:IsA("Tool") then
+        BasePart1 = Object1:FindFirstChild("Handle")
+        if not BasePart1 then
+            BasePart1 = Object1:FindFirstChildWhichIsA("BasePart", true)
+        end
+    else
+        BasePart1 = Object1:FindFirstChildWhichIsA("BasePart", true)
+    end
+    if Object2:IsA("BasePart") then
+        BasePart2 = Object2
+    elseif Object2:IsA("Accessory") then
+        BasePart2 = Object2:FindFirstChild("Handle")
+        if not BasePart2 then
+            BasePart2 = Object2:FindFirstChildWhichIsA("BasePart", true)
+        end
+    elseif Object2:IsA("Tool") then
+        BasePart2 = Object2:FindFirstChild("Handle")
+        if not BasePart2 then
+            BasePart2 = Object2:FindFirstChildWhichIsA("BasePart", true)
+        end
+    else
+        BasePart2 = Object2:FindFirstChildWhichIsA("BasePart", true)
+    end
+    local Weld = Instance.new("Weld")
+    Weld.Part0 = BasePart1
+    Weld.Part1 = BasePart2
+    return Weld
+end
 lib.Clone = function(self, Object)
 	if self ~= lib then Object = self end
 	if typeof(Object) ~= "Instance" then return end
