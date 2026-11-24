@@ -315,7 +315,7 @@ lib.SetCFrame = function(self, Object, _CFrame)
 		if SmoothBody then
 			SmoothBody.Position = _CFrame.Position
 		end
-		Object.Velocity = Vector3.new(0, 3.14, 0)
+		Object.Velocity = Vector3.new(0, 0.14, 0)
 	elseif Object:IsA("Accessory") then
 		local Handle = Object:FindFirstChild("Handle")
 		if Handle and Handle:IsA("BasePart") then
@@ -324,7 +324,7 @@ lib.SetCFrame = function(self, Object, _CFrame)
 			if SmoothBody then
 				SmoothBody.Position = _CFrame.Position
 			end
-			Handle.Velocity = Vector3.new(0, 3.14, 0)
+			Handle.Velocity = Vector3.new(0, 0.14, 0)
 		end
 	end
 end
