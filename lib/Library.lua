@@ -365,7 +365,7 @@ end
 lib.ReanimateAccessory = function(self, Accessories, Character)
 	if self ~= lib then Accessories = self end
 	if type(Accessories) ~= "table" then return end
-	if not plr.Character or not Character then return end
+	if not plr.Character and not Character then return end
 	local Ids = {}
 	local Indexes = {}
 	local Count = 0
