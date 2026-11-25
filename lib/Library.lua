@@ -424,7 +424,6 @@ lib.ReanimateCharacter = function(self, Character)
 			end
 		end
 	end
-	
 	local Reanimation = {}
 	local Connection = RunService.PostSimulation:Connect(function()
 		for Index, Value in pairs(Character:GetChildren()) do
@@ -446,20 +445,35 @@ lib.ReanimateCharacter = function(self, Character)
 			end
 		end
 	end)
-	
 	plr.Character = Character
 	task.wait(4.5)
 	char.Humanoid.Health = 0
 	workspace.CurrentCamera.CameraSubject = Character
-	
 	function Reanimation:Disconnect()
 		if Connection then
 			Connection:Disconnect()
 			Connection = nil
 		end
 	end
-	
 	return Reanimation
+end
+lib.FastestLoop = function(self, Function)
+	if self ~= lib then Function = self end
+	if type(Function) ~= "function" then return end
+	local Settings = {}
+	local Connections = {}
+	Connections[#Connections+1] = RunService.RenderStepped:Connect(Function)
+	Connections[#Connections+1] = RunService.PostSimulation:Connect(Function)
+	Connections[#Connections+1] = RunService.PreSimulation:Connect(Function)
+	Connections[#Connections+1] = RunService.Heartbeat:Connect(Function)
+	Connections[#Connections+1] = RunService.PreRender:Connect(Function)
+	Connections[#Connections+1] = RunService.PreAnimation:Connect(Function)
+	function Settings:Disconnect()
+		for Index, Value in ipairs(Connections) do
+			Value:Disconnect()
+		end
+	end
+	return Settings
 end
 lib.GetHumanoidRootPart = function(self, Player)
 	if self ~= lib then Player = self end
