@@ -1143,6 +1143,7 @@ local Custom = {
 	MarketplaceService = game:GetService("MarketplaceService"),
 	ContentProvider = game:GetService("ContentProvider"),
 	UserInputService = game:GetService("UserInputService"),
+	AssetService = game:GetService("AssetService"),
 	plr = plr,
 	char = function()
 		return plr.Character
